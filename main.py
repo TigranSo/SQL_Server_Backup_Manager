@@ -553,7 +553,7 @@ class BackupApp(QMainWindow):
 
     def show_about(self):
         author_name = "Tigran"
-        github_link = "https://github.com/TigranSo"
+        github_link = "https://github.com/TigranSo/SQL_Server_Backup_Manager"
         telegram_link = "@tigran_so"
         
         text = f"""
@@ -572,4 +572,5 @@ if __name__ == "__main__":
     app.setStyle("Fusion") 
     window = BackupApp()
     window.show()
+
     sys.exit(app.exec())
