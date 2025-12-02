@@ -317,7 +317,7 @@ class BackupApp(QMainWindow):
         
         path_layout = QHBoxLayout()
         self.backup_path = QLineEdit("G:\\backup\\")
-        self.backup_path.setPlaceholderText("Путь на сервере (например C:\\Backups\\)")
+        self.backup_path.setPlaceholderText("Путь на сервере (например G:\\backup\\)")
         path_layout.addWidget(QLabel("Папка:"))
         path_layout.addWidget(self.backup_path)
         
@@ -572,5 +572,4 @@ if __name__ == "__main__":
     app.setStyle("Fusion") 
     window = BackupApp()
     window.show()
-
     sys.exit(app.exec())
