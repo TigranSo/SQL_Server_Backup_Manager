@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                                QHBoxLayout, QLabel, QLineEdit, QPushButton, 
                                QTableWidget, QTableWidgetItem, QComboBox, QMessageBox, 
                                QGroupBox, QTabWidget, QFileDialog, QCheckBox, QTimeEdit,
-                               QProgressBar, QDialog, QFormLayout)
+                               QProgressBar, QDialog, QFormLayout, QRadioButton, QButtonGroup)
 from PySide6.QtCore import Qt, QThread, Signal, QSettings, QTime, QTimer
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QSize
@@ -53,7 +53,7 @@ class BackupApp(QMainWindow):
         icon.addFile(u"logo.png", QSize(), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
     
-        # Темная тема и стилизация (CSS)
+        # Темная тема
         self.setStyleSheet("""
             QMainWindow { background-color: #2b2b2b; color: #ffffff; }
             QWidget { color: #ffffff; font-size: 14px; }
@@ -97,6 +97,9 @@ class BackupApp(QMainWindow):
             QTabWidget::pane { border: 1px solid #444; }
             QTabBar::tab { background: #333; color: #aaa; padding: 8px 20px; }
             QTabBar::tab:selected { background: #4CAF50; color: white; }
+            QRadioButton { spacing: 8px; }
+            QRadioButton::indicator { width: 18px; height: 18px; }
+            QRadioButton::indicator:checked { background-color: #4CAF50; border: 2px solid #555; border-radius: 9px; }
         """)
 
         # Меню
@@ -119,11 +122,17 @@ class BackupApp(QMainWindow):
         self.conn_str_cache = ""
         self.history = self.load_history()
 
-        # Инициализация вкладок
+        SHOW_RESTORE = True  
+        SHOW_SCHEDULER = True  
+
         self.init_connection_tab()
         self.init_backup_tab()
-        self.init_restore_tab()
-        self.init_scheduler_tab()
+
+        if SHOW_RESTORE:
+            self.init_restore_tab()
+            
+        if SHOW_SCHEDULER:
+            self.init_scheduler_tab()
 
         # Статус бар
         status_container = QWidget()
@@ -184,7 +193,7 @@ class BackupApp(QMainWindow):
         form_layout = QFormLayout()
         
         self.conn_name = QLineEdit()
-        self.conn_name.setPlaceholderText("Название (например: Сервер 1С)")
+        self.conn_name.setPlaceholderText("Название")
         
         self.server_input = QLineEdit()
         self.server_input.setPlaceholderText("Адрес (IP или Hostname)")
@@ -210,7 +219,7 @@ class BackupApp(QMainWindow):
         layout.addWidget(self.btn_connect)
         
         layout.addStretch()
-        self.tabs.addTab(tab, "🔌 Подключение")
+        self.tabs.addTab(tab, "Подключение")
 
     def fill_connection_data(self):
         data = self.combo_history.currentData()
@@ -280,9 +289,9 @@ class BackupApp(QMainWindow):
         dbs = cursor.fetchall()
         
         self.db_table.setRowCount(0)
-        self.db_combo_restore.clear()
-        self.db_combo_schedule.clear()
-
+        # Очистка комбобоксов только если они были созданы
+        # они создаются только если соответствующие вкладки активны
+        
         self.db_table.setRowCount(len(dbs))
         for i, db in enumerate(dbs):
             db_name = db[0]
@@ -294,10 +303,6 @@ class BackupApp(QMainWindow):
             
             # Имя базы
             self.db_table.setItem(i, 1, QTableWidgetItem(db_name))
-            
-            # Добавление в выпадающие списки других вкладок
-            self.db_combo_restore.addItem(db_name)
-            self.db_combo_schedule.addItem(db_name)
 
     # Вкладка  Бэкап 
     def init_backup_tab(self):
@@ -321,6 +326,30 @@ class BackupApp(QMainWindow):
         path_layout.addWidget(QLabel("Папка:"))
         path_layout.addWidget(self.backup_path)
         
+        # Группа для выбора типа бэкапа
+        type_group = QGroupBox("Тип бэкапа")
+        type_layout = QHBoxLayout()
+        
+        # Создаем группу радиокнопок
+        self.backup_type_group = QButtonGroup(self)
+        
+        # Радиокнопки для выбора типа
+        self.radio_full = QRadioButton("Полный бэкап")
+        self.radio_full.setChecked(True)  # По умолчанию выбран полный бэкап
+        self.radio_full.setToolTip("Создает полную копию базы данных")
+        
+        self.radio_differential = QRadioButton("Дифференциальный")
+        self.radio_differential.setToolTip("Создает бэкап только изменений с момента последнего полного бэкапа")
+        
+        # Добавляем радиокнопки в группу
+        self.backup_type_group.addButton(self.radio_full)
+        self.backup_type_group.addButton(self.radio_differential)
+        
+        type_layout.addWidget(self.radio_full)
+        type_layout.addWidget(self.radio_differential)
+        type_group.setLayout(type_layout)
+        
+        # Дополнительные опции
         opt_layout = QHBoxLayout()
         self.chk_compression = QCheckBox("Сжимать бэкап (COMPRESSION)")
         self.chk_compression.setChecked(True)
@@ -333,6 +362,7 @@ class BackupApp(QMainWindow):
         opt_layout.addWidget(self.chk_copy_only)
         
         sett_layout.addLayout(path_layout)
+        sett_layout.addWidget(type_group)
         sett_layout.addLayout(opt_layout)
         sett_group.setLayout(sett_layout)
         layout.addWidget(sett_group)
@@ -364,20 +394,29 @@ class BackupApp(QMainWindow):
             target_path += "\\"
 
         sql_commands = []
+        backup_type = "дифференциальный" if self.radio_differential.isChecked() else "полный"
+        
         for db in selected_dbs:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{target_path}{db}_{timestamp}.bak"
+            type_suffix = "_DIFF" if self.radio_differential.isChecked() else "_FULL"
+            filename = f"{target_path}{db}_{timestamp}{type_suffix}.bak"
             
             # Формируем SQL команду
             cmd = f"BACKUP DATABASE [{db}] TO DISK = '{filename}' WITH INIT"
+            
+            if self.radio_differential.isChecked():
+                cmd += ", DIFFERENTIAL"
+            
             if self.chk_compression.isChecked():
                 cmd += ", COMPRESSION"
+            
             if self.chk_copy_only.isChecked():
                 cmd += ", COPY_ONLY"
             
             sql_commands.append(cmd)
 
-        self.run_worker(sql_commands, "Массовый бэкап")
+        operation_name = f"Массовый {backup_type} бэкап"
+        self.run_worker(sql_commands, operation_name)
 
     # Вкладка  Восстановление 
     def init_restore_tab(self):
