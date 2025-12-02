@@ -1,4 +1,4 @@
-SQL Server Backup Manager Pro
+SQL Server Backup Manager
 
 Мощный и удобный инструмент с графическим интерфейсом (GUI) для управления резервными копиями баз данных MS SQL Server. Написан на Python с использованием PySide6.
 
