@@ -466,7 +466,8 @@ class BackupApp(QMainWindow):
         
         self.db_combo_schedule = QComboBox()
         self.time_edit = QTimeEdit()
-        self.time_edit.setTime(QTime.currentTime().addSecs(3600)) 
+        self.time_edit.setTime(QTime.currentTime())
+        # self.time_edit.setTime(QTime.currentTime().addSecs(3600)) # на 1 час вперед
         
         self.btn_schedule = QPushButton("Активировать таймер")
         self.btn_schedule.setCheckable(True)
