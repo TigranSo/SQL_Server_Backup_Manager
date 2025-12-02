@@ -98,8 +98,8 @@ class BackupApp(QMainWindow):
             QTabBar::tab { background: #333; color: #aaa; padding: 8px 20px; }
             QTabBar::tab:selected { background: #4CAF50; color: white; }
             QRadioButton { spacing: 8px; }
-            QRadioButton::indicator { width: 18px; height: 18px; }
-            QRadioButton::indicator:checked { background-color: #4CAF50; border: 2px solid #555; border-radius: 9px; }
+            QRadioButton::indicator { width: 18px; height: 18px; background-color: #000; border-radius: 9px;}
+            QRadioButton::indicator:checked { background-color: #7ef283; border: 2px solid #555; border-radius: 9px; }
         """)
 
         # Меню
@@ -613,3 +613,4 @@ if __name__ == "__main__":
     window = BackupApp()
     window.show()
     sys.exit(app.exec())
+
