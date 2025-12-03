@@ -397,9 +397,16 @@ class BackupApp(QMainWindow):
         backup_type = "дифференциальный" if self.radio_differential.isChecked() else "полный"
         
         for db in selected_dbs:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            type_suffix = "_DIFF" if self.radio_differential.isChecked() else "_FULL"
-            filename = f"{target_path}{db}_{timestamp}{type_suffix}.bak"
+            # имя сервера 
+            server_address = self.server_input.text()
+            # убираем порт и прочее
+            server_name = server_address.split('\\')[0].split('.')[0]
+            
+            # Форматируем дату и время
+            timestamp = datetime.now().strftime("%Y_%m_%d_%H%M%S")
+            
+            # Формируем имя файла: Сервер_База_Дата_Время
+            filename = f"{target_path}{server_name}_{db}_{timestamp}.bak"
             
             # Формируем SQL команду
             cmd = f"BACKUP DATABASE [{db}] TO DISK = '{filename}' WITH INIT"
@@ -559,7 +566,10 @@ class BackupApp(QMainWindow):
         
         path = self.backup_path.text()
         if not path.endswith("\\") and not path.endswith("/"): path += "\\"
-        filename = f"{path}{db}_AUTO_{datetime.now().strftime('%H%M')}.bak"
+        server_address = self.server_input.text()
+        server_name = server_address.split('\\')[0].split('.')[0]
+        timestamp = datetime.now().strftime("%Y_%m_%d_%H%M%S")
+        filename = f"{path}{server_name}_{db}_{timestamp}.bak"
         
         sql = f"BACKUP DATABASE [{db}] TO DISK='{filename}' WITH COMPRESSION, INIT"
         self.run_worker([sql], f"Авто-бэкап {db}")
@@ -613,4 +623,5 @@ if __name__ == "__main__":
     window = BackupApp()
     window.show()
     sys.exit(app.exec())
+
 
