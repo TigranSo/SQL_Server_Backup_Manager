@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DEFAULT_BACKUP_PATH = os.getenv(r'DEFAULT_BACKUP_PATH', r'G:\backup')
+DEFAULT_BACKUP_PATH = os.getenv(r'DEFAULT_BACKUP_PATH', 'localhost')
 
 SETTINGS_FILE = os.getenv('SETTINGS_FILE', 'connection_history.json')
 
