@@ -148,10 +148,6 @@ class BackupApp(QMainWindow):
                 font-size: 10pt;
                 min-height: 20px;
             }
-            QPushButton:hover { 
-                background-color: #4a4a4a; 
-                transform: translateY(-1px);
-            }
             QPushButton:pressed { 
                 background-color: #2a2a2a; 
             }
@@ -430,7 +426,7 @@ class BackupApp(QMainWindow):
         self.conn_name.setPlaceholderText("Название подключения")
         
         self.server_input = QLineEdit()
-        self.server_input.setPlaceholderText("localhost\\SQLEXPRESS или 192.168.1.100")
+        self.server_input.setPlaceholderText("localhost")
         
         self.user_input = QLineEdit()
         self.user_input.setText(DEFAULT_USER)
@@ -455,7 +451,7 @@ class BackupApp(QMainWindow):
         layout.addWidget(self.btn_connect)
         
         layout.addStretch()
-        self.tabs.addTab(tab, "📡 Подключение")
+        self.tabs.addTab(tab, "Подключение")
 
     def fill_connection_data(self):
         data = self.combo_history.currentData()
@@ -716,13 +712,13 @@ class BackupApp(QMainWindow):
         layout.addWidget(sett_group)
 
         # Кнопка запуска
-        self.btn_backup = QPushButton("🚀 ЗАПУСТИТЬ БЭКАП")
+        self.btn_backup = QPushButton("ЗАПУСТИТЬ БЭКАП")
         self.btn_backup.setObjectName("BlueBtn")
         self.btn_backup.setFixedHeight(50)
         self.btn_backup.clicked.connect(self.start_backup)
         layout.addWidget(self.btn_backup)
         
-        self.tabs.addTab(tab, "💾 Создание Бэкапа")
+        self.tabs.addTab(tab, "Создание Бэкапа")
 
     def test_backup_path(self):
         """Проверка доступности пути для бэкапов"""
@@ -767,8 +763,7 @@ class BackupApp(QMainWindow):
                 QMessageBox.critical(self, "Ошибка", f"Не удалось получить доступ к пути:\n{str(e)}")
         else:
             QMessageBox.warning(self, "Предупреждение", 
-                              f"Указан локальный путь:\n{path}\n\n"
-                              "Рекомендуется использовать сетевой путь для централизованного хранения бэкапов.")
+                              f"Указан локальный путь:\n{path}\n\n")
 
     def select_all_databases(self, select):
         """Выделить/снять все базы данных"""
@@ -853,7 +848,7 @@ class BackupApp(QMainWindow):
         layout.setSpacing(15)
 
         # Предупреждение
-        warn_label = QLabel("⚠️ ВНИМАНИЕ: Восстановление полностью перезапишет текущую базу!")
+        warn_label = QLabel("ВНИМАНИЕ: Восстановление полностью перезапишет текущую базу!")
         warn_label.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 14px; padding: 10px; background-color: #333; border-radius: 5px;")
         warn_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(warn_label)
@@ -905,19 +900,19 @@ class BackupApp(QMainWindow):
         layout.addWidget(options_group)
 
         # Кнопка восстановления
-        btn_restore = QPushButton("🔄 ВОССТАНОВИТЬ БАЗУ")
+        btn_restore = QPushButton("ВОССТАНОВИТЬ БАЗУ")
         btn_restore.setObjectName("RedBtn")
         btn_restore.setFixedHeight(50)
         btn_restore.clicked.connect(self.start_restore)
         layout.addWidget(btn_restore)
         
         layout.addStretch()
-        self.tabs.addTab(tab, "↩️ Восстановление")
+        self.tabs.addTab(tab, "Восстановление")
 
     def browse_backup_file_local(self):
         """Просмотр файлов бэкапов в сетевой папке"""
         # Используем сетевой путь по умолчанию
-        initial_path = DEFAULT_BACKUP_PATH if os.path.exists(DEFAULT_BACKUP_PATH) else ""
+        initial_path = DEFAULT_BACKUP_PATH if os.path.exists(DEFAULT_BACKUP_PATH) else r""
         
         fname, _ = QFileDialog.getOpenFileName(self, "Выберите файл бэкапа", 
                                               initial_path, "Backup Files (*.bak);;All Files (*)")
@@ -1013,17 +1008,17 @@ class BackupApp(QMainWindow):
         
         # Кнопки управления таймером
         timer_layout = QHBoxLayout()
-        self.btn_schedule = QPushButton("⏰ Активировать планировщик")
+        self.btn_schedule = QPushButton("Активировать планировщик")
         self.btn_schedule.setCheckable(True)
         self.btn_schedule.clicked.connect(self.toggle_schedule)
         self.btn_schedule.setFixedHeight(40)
         
-        self.btn_test_backup = QPushButton("Тестовый бэкап")
-        self.btn_test_backup.clicked.connect(self.test_scheduled_backup)
-        self.btn_test_backup.setObjectName("YellowBtn")
+        # self.btn_test_backup = QPushButton("Тестовый бэкап")
+        # self.btn_test_backup.clicked.connect(self.test_scheduled_backup)
+        # self.btn_test_backup.setObjectName("YellowBtn")
         
         timer_layout.addWidget(self.btn_schedule)
-        timer_layout.addWidget(self.btn_test_backup)
+        # timer_layout.addWidget(self.btn_test_backup)
         
         gl.addRow("База данных:", self.db_combo_schedule)
         gl.addRow("Время запуска:", self.time_edit)
@@ -1051,7 +1046,7 @@ class BackupApp(QMainWindow):
         layout.addWidget(status_group)
         
         layout.addStretch()
-        self.tabs.addTab(tab, "⏰ Планировщик")
+        self.tabs.addTab(tab, "Планировщик")
         
         # Таймер для проверки времени
         self.timer = QTimer()
@@ -1078,13 +1073,13 @@ class BackupApp(QMainWindow):
                 self.btn_schedule.setChecked(False)
                 return
                 
-            self.btn_schedule.setText("⏹ Остановить планировщик")
+            self.btn_schedule.setText("Остановить планировщик")
             self.btn_schedule.setStyleSheet("background-color: #f44336; color: white;")
             self.lbl_timer_status.setText(f"Планировщик активен для базы '{self.db_combo_schedule.currentText()}'")
             self.lbl_timer_status.setStyleSheet("color: #4CAF50; font-weight: bold;")
             self.update_next_backup_time()
         else:
-            self.btn_schedule.setText("⏰ Активировать планировщик")
+            self.btn_schedule.setText("Активировать планировщик")
             self.btn_schedule.setStyleSheet("")
             self.lbl_timer_status.setText("Планировщик отключен")
             self.lbl_timer_status.setStyleSheet("color: grey;")
@@ -1136,22 +1131,22 @@ class BackupApp(QMainWindow):
             self.last_backup_day = current_day
             self.update_next_backup_time()
 
-    def test_scheduled_backup(self):
-        """Тестовый запуск запланированного бэкапа"""
-        if not self.connection:
-            QMessageBox.warning(self, "Ошибка", "Сначала подключитесь к серверу!")
-            return
+    # def test_scheduled_backup(self):
+    #     """Тестовый запуск запланированного бэкапа"""
+    #     if not self.connection:
+    #         QMessageBox.warning(self, "Ошибка", "Сначала подключитесь к серверу!")
+    #         return
             
-        db = self.db_combo_schedule.currentText()
-        if not db:
-            QMessageBox.warning(self, "Ошибка", "Выберите базу данных")
-            return
+    #     db = self.db_combo_schedule.currentText()
+    #     if not db:
+    #         QMessageBox.warning(self, "Ошибка", "Выберите базу данных")
+    #         return
             
-        reply = QMessageBox.question(self, "Тестовый бэкап", 
-                                   f"Выполнить тестовый бэкап базы '{db}'?",
-                                   QMessageBox.Yes | QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            self.perform_scheduled_backup()
+    #     reply = QMessageBox.question(self, "Тестовый бэкап", 
+    #                                f"Выполнить тестовый бэкап базы '{db}'?",
+    #                                QMessageBox.Yes | QMessageBox.No)
+    #     if reply == QMessageBox.Yes:
+    #         self.perform_scheduled_backup()
 
     def perform_scheduled_backup(self):
         db = self.db_combo_schedule.currentText()
@@ -1194,7 +1189,7 @@ class BackupApp(QMainWindow):
         
         btn_browse = QPushButton("Обзор")
         btn_browse.clicked.connect(self.browse_backup_folder)
-        btn_refresh = QPushButton("🔄 Обновить")
+        btn_refresh = QPushButton("Обновить")
         btn_refresh.clicked.connect(self.refresh_backup_files)
         btn_test_path = QPushButton("Проверить")
         btn_test_path.clicked.connect(self.test_files_path)
@@ -1258,19 +1253,19 @@ class BackupApp(QMainWindow):
         # Панель действий
         action_panel = QHBoxLayout()
         
-        btn_open_folder = QPushButton("📂 Открыть папку")
+        btn_open_folder = QPushButton("Открыть папку")
         btn_open_folder.clicked.connect(self.open_backup_folder)
         btn_open_folder.setObjectName("BlueBtn")
         
-        btn_download = QPushButton("⬇️ Скачать выбранное")
+        btn_download = QPushButton("Скачать выбранное")
         btn_download.clicked.connect(self.download_selected_files)
         btn_download.setObjectName("GreenBtn")
         
-        btn_delete = QPushButton("🗑️ Удалить выбранное")
+        btn_delete = QPushButton("Удалить выбранное")
         btn_delete.clicked.connect(self.delete_selected_files)
         btn_delete.setObjectName("RedBtn")
         
-        btn_use_for_restore = QPushButton("↩️ Использовать для восстановления")
+        btn_use_for_restore = QPushButton("Использовать для восстановления")
         btn_use_for_restore.clicked.connect(self.use_file_for_restore)
         btn_use_for_restore.setObjectName("YellowBtn")
         
@@ -1295,7 +1290,7 @@ class BackupApp(QMainWindow):
         
         layout.addLayout(stats_layout)
         
-        self.tabs.addTab(tab, "📁 Файлы Бэкапов")
+        self.tabs.addTab(tab, "Файлы Бэкапов")
 
     def browse_backup_folder(self):
         """Выбор папки с бэкапами"""
@@ -1512,13 +1507,13 @@ class BackupApp(QMainWindow):
     def show_files_context_menu(self, position):
         menu = QMenu()
         
-        open_folder_action = menu.addAction("📂 Открыть папку с файлом")
-        download_action = menu.addAction("⬇️ Скачать файл")
-        delete_action = menu.addAction("🗑️ Удалить файл")
-        restore_action = menu.addAction("↩️ Использовать для восстановления")
+        open_folder_action = menu.addAction("Открыть папку с файлом")
+        download_action = menu.addAction("Скачать файл")
+        delete_action = menu.addAction("Удалить файл")
+        restore_action = menu.addAction("↩Использовать для восстановления")
         menu.addSeparator()
-        copy_path_action = menu.addAction("📋 Копировать путь")
-        show_info_action = menu.addAction("ℹ️ Информация о файле")
+        copy_path_action = menu.addAction("Копировать путь")
+        show_info_action = menu.addAction("ℹИнформация о файле")
         
         action = menu.exec_(self.files_table.mapToGlobal(position))
         
@@ -1619,7 +1614,7 @@ class BackupApp(QMainWindow):
         file_list = "\n".join([f['name'] for f in files])
         reply = QMessageBox.question(self, "Подтверждение удаления",
                                    f"Вы точно хотите удалить {len(files)} файлов?\n\n{file_list}\n\n"
-                                   "⚠️ Эта операция необратима!",
+                                   "Эта операция необратима!",
                                    QMessageBox.Yes | QMessageBox.No)
         
         if reply == QMessageBox.Yes:
@@ -1781,3 +1776,4 @@ if __name__ == "__main__":
     window = BackupApp()
     window.show()
     sys.exit(app.exec())
+
